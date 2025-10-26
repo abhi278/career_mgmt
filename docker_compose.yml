@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  resume-analyzer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: resume-analyzer-app
+    ports:
+      - "8050:8050"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Mount source code for development (comment out for production)
+      - ./src:/app/src
+      - ./app.py:/app/app.py
+      - ./pages:/app/pages
+      # Temporary files directory
+      - /tmp:/tmp
+    restart: unless-stopped
+    networks:
+      - resume-analyzer-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8050"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  resume-analyzer-network:
+    driver: bridge
